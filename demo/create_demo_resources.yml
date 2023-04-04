@@ -1,0 +1,58 @@
+---
+- name: Create AAP Resources for Patching Demo
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - "{{ playbook_dir }}/vars/credential_type.yml"
+    - "{{ playbook_dir }}/vars/credential.yml"
+    - "{{ playbook_dir }}/vars/job_template.yml"
+
+  tasks:
+    - name: Determine that both AAP and Machine credentials are set
+      ansible.builtin.assert:
+        that:
+          - "lookup('env', 'CONTROLLER_USERNAME') !=''"
+        fail_msg:
+          - "This Job requires two credentials"
+          - "Red Hat Ansible Automation Platform credential is not set"
+          - "Please assign correct credentials to the Job Template"
+
+    - name: Determine that both AAP and Machine credentials are set
+      ansible.builtin.debug:
+        msg:
+          - "{{ lookup('env', 'CONTROLLER_USERNAME') }}"
+          - "{{ lookup('env', 'CONTROLLER_PASSWORD') }}"
+          - "{{ lookup('env', 'CONTROLLER_HOST') }}"
+
+    - name: Create Slack API Token Credential Type
+      awx.awx.credential_type:
+        name: "{{ slack_credential_type.name }}"
+        description: "{{ slack_credential_type.description }}"
+        kind: "{{ slack_credential_type.kind }}"
+        inputs: "{{ slack_credential_type.inputs }}"
+        injectors: "{{ slack_credential_type.injectors }}"
+        state: present
+        validate_certs: false
+
+    - name: Create Slack API Token Credential
+      when:
+        - input_slack_token is defined
+        - input_slack_token|length > 0
+      awx.awx.credential:
+        name: "{{ slack_credential.name }}"
+        organization: "{{ slack_credential.organization }}"
+        credential_type: "{{ slack_credential.credential_type }}"
+        inputs: "{{ slack_credential.inputs }}"
+        state: present
+
+    - name: Create Patching Updates Slack Notification Job Template
+      awx.awx.job_template:
+        name: "{{ patch_slack_notification_jt.name }}"
+        organization: "{{ patch_slack_notification_jt.organization }}"
+        job_type: "{{ patch_slack_notification_jt.job_type }}"
+        inventory: "{{ patch_slack_notification_jt.inventory }}"
+        project: "{{ patch_slack_notification_jt.project }}"
+        playbook: "{{ patch_slack_notification_jt.playbook }}"
+        credentials: "{{ patch_slack_notification_jt.credentials }}"
+        state: present
