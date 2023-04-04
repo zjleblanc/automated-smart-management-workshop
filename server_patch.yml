@@ -20,6 +20,13 @@
   - name: output updates dictionary
     debug:
       msg: "{{ updates }}"
+
+  - name: set stat for patching notification
+    ansible.builtin.set_stats:
+      data:
+        nodes_updated:
+          - hostname: "{{ inventory_hostname }}"
+            updates: "{{ updates }}"
     
   - name: updated package list
     debug:
