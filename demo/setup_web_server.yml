@@ -1,6 +1,6 @@
 ---
 - name: Setup web server on node1
-  hosts: node1.example.com
+  hosts: all
   gather_facts: false
   become: true
 
