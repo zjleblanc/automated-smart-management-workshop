@@ -1,6 +1,8 @@
 ---
 - name: Setup web server on node1
   hosts: node1.example.com
+  gather_facts: false
+  become: true
 
   tasks:
     - name: Install httpd
