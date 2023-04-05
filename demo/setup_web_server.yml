@@ -1,0 +1,19 @@
+---
+- name: Setup web server on node1
+  hosts: node1.example.com
+
+  tasks:
+    - name: Install httpd
+      ansible.builtin.package:
+        name: httpd
+        state: present
+
+    - name: Start service
+      ansible.builtin.service:
+        name: httpd
+        state: started
+
+    - name: Open firewall port
+      ansible.posix.firewalld:
+        port: 80/tcp
+        state: enabled
