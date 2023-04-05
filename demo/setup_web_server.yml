@@ -17,10 +17,15 @@
         - httpd
         - firewalld
       ansible.builtin.service:
-        name: "{{ item }}" 
+        name: "{{ item }}"
         state: started
 
-    - name: Open firewall port
+    - name: Open http firewall port
       ansible.builtin.firewalld:
         port: 80/tcp
+        state: enabled
+
+    - name: Open ssh firewall port
+      ansible.builtin.firewalld:
+        port: 22/tcp
         state: enabled
