@@ -13,10 +13,11 @@
         state: present
 
     - name: Start service
+      loop:
+        - httpd
+        - firewalld
       ansible.builtin.service:
-        name:
-          - httpd
-          - firewalld
+        name: "{{ item }}" 
         state: started
 
     - name: Open firewall port
