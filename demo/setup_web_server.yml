@@ -7,12 +7,16 @@
   tasks:
     - name: Install httpd
       ansible.builtin.package:
-        name: httpd
+        name:
+          - httpd
+          - firewalld
         state: present
 
     - name: Start service
       ansible.builtin.service:
-        name: httpd
+        name:
+          - httpd
+          - firewalld
         state: started
 
     - name: Open firewall port
