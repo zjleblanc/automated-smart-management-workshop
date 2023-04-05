@@ -5,6 +5,10 @@
     check_only: yes
 
   tasks:
+  - name: wait for ssh to be available
+    ansible.builtin.wait_for:
+      host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+      port: 22
   - name: check operating system
     assert:
       that: "ansible_os_family == 'RedHat'"
