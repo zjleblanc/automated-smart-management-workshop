@@ -14,6 +14,6 @@
         state: started
 
     - name: Open firewall port
-      ansible.posix.firewalld:
+      ansible.builtin.firewalld:
         port: 80/tcp
         state: enabled
