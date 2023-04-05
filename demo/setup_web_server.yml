@@ -5,27 +5,30 @@
   become: true
 
   tasks:
-    - name: Install httpd
+    - name: Install packages
       ansible.builtin.package:
         name:
           - httpd
           - firewalld
         state: present
 
-    - name: Start service
+    - name: Start services
       loop:
         - httpd
         - firewalld
       ansible.builtin.service:
         name: "{{ item }}"
         state: started
+        enabled: true
 
     - name: Open http firewall port
       ansible.builtin.firewalld:
         port: 80/tcp
         state: enabled
+        permanent: true
 
     - name: Open ssh firewall port
       ansible.builtin.firewalld:
         port: 22/tcp
         state: enabled
+        permanent: true
