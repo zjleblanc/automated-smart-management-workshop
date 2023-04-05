@@ -1,6 +1,7 @@
 ---
 - hosts: "env_{{ lifecycle_stage }}"
   become: yes
+  gather_facts: no
   vars:
     check_only: yes
 
@@ -9,6 +10,10 @@
     ansible.builtin.wait_for:
       host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
       port: 22
+
+  - name: gather facts
+    ansible.builtin.setup:
+
   - name: check operating system
     assert:
       that: "ansible_os_family == 'RedHat'"
