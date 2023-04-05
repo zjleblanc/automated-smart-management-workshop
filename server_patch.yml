@@ -10,6 +10,7 @@
     ansible.builtin.wait_for:
       host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
       port: 22
+    delegate_to: localhost
 
   - name: gather facts
     ansible.builtin.setup:
