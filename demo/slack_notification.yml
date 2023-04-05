@@ -28,6 +28,6 @@
           Authorization: "Bearer {{ slack_token }}"
         body_format: form-urlencoded
         body:
-          content: "{{ node.updates }}"
+          content: "{{ node.updates | to_nice_yaml }}"
           title: "Patching Updates for {{ node.hostname }}"
           channels: "smart-mgmt-demo"
