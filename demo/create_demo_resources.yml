@@ -7,16 +7,19 @@
     - "{{ playbook_dir }}/vars/credential_type.yml"
     - "{{ playbook_dir }}/vars/credential.yml"
     - "{{ playbook_dir }}/vars/job_template.yml"
+    - "{{ playbook_dir }}/vars/workflow_job_template.yml"
 
   tasks:
     - name: Determine that both AAP and Machine credentials are set
       ansible.builtin.assert:
         that:
           - "lookup('env', 'CONTROLLER_USERNAME') !=''"
+          - workshop_guid is defined
         fail_msg:
           - "This Job requires two credentials"
           - "Red Hat Ansible Automation Platform credential is not set"
           - "Please assign correct credentials to the Job Template"
+          - "Also set the workshop_guid extra var to your workshop guid"
 
     - name: Determine that both AAP and Machine credentials are set
       ansible.builtin.debug:
@@ -46,13 +49,41 @@
         inputs: "{{ slack_credential.inputs }}"
         state: present
 
-    - name: Create Patching Updates Slack Notification Job Template
+    - name: Create additonal job templates
+      loop: "{{ additional_jts }}"
+      loop_control:
+        loop_var: jt
       awx.awx.job_template:
-        name: "{{ patch_slack_notification_jt.name }}"
-        organization: "{{ patch_slack_notification_jt.organization }}"
-        job_type: "{{ patch_slack_notification_jt.job_type }}"
-        inventory: "{{ patch_slack_notification_jt.inventory }}"
-        project: "{{ patch_slack_notification_jt.project }}"
-        playbook: "{{ patch_slack_notification_jt.playbook }}"
-        credentials: "{{ patch_slack_notification_jt.credentials }}"
+        name: "{{ jt.name }}"
+        organization: "{{ jt.organization }}"
+        inventory: "{{ jt.inventory | default(omit) }}"
+        project: "{{ jt.project }}"
+        playbook: "{{ jt.playbook }}"
+        credentials: "{{ jt.credentials | default(omit) }}"
+        limit: "{{ jt.limit | default(omit) }}"
+        ask_limit_on_launch: "{{ jt.ask_limit_on_launch | default(omit) }}"
+        ask_extra_vars: "{{ jt.ask_extra_vars | default(omit) }}"
+        state: present
+
+    - name: Job templates - prompt extra vars
+      loop: "{{ prompt_extra_vars_jts }}"
+      loop_control:
+        loop_var: jt
+      awx.awx.job_template:
+        name: "{{ jt.name }}"
+        organization: "{{ jt.organization }}"
+        project: "{{ jt.project }}"
+        ask_extra_vars: true
+
+    - name: Create Patch Workflow Job Template
+      awx.awx.workflow_job_template:
+        name: "{{ demo_wjt.name }}"
+        description: "{{ demo_wjt.description }}"
+        organization: "{{ demo_wjt.organization }}"
+        inventory: "{{ demo_wjt.inventory }}"
+        ask_limit_on_launch: "{{ demo_wjt.ask_limit_on_launch }}"
+        limit: "{{ demo_wjt.limit }}"
+        ask_variables_on_launch: "{{ demo_wjt.ask_variables_on_launch }}"
+        extra_vars: "{{ demo_wjt.extra_vars }}"
+        workflow_nodes: "{{ demo_wjt.workflow_nodes }}"
         state: present

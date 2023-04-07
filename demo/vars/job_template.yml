@@ -1,9 +1,44 @@
-patch_slack_notification_jt:
-  name: Patch Updates Slack Notification
-  organization: Default
-  job_type: run
-  inventory: Workshop Inventory
-  project: Automated Management
-  playbook: demo/slack_notification.yml
-  credentials:
-    - "{{ slack_credential.name }}"
+prompt_extra_vars_jts:
+  - name: CONVERT2RHEL / 01 - Take node snapshot
+    organization: Default
+    project: Automated Management
+  - name: SERVER / RHEL7 - Patch
+    organization: Default
+    project: Automated Management
+  - name: CONVERT2RHEL / 98 - Revert node state via snapshot
+    organization: Default
+    project: Automated Management
+
+additional_jts:
+  - name: DEMO / Patch Updates Slack Notification
+    organization: Default
+    job_type: run
+    inventory: Workshop Inventory
+    project: Automated Management
+    playbook: demo/slack_notification.yml
+    credentials:
+      - "{{ slack_credential.name }}"
+  - name: DEMO / Health Check
+    organization: Default
+    job_type: run
+    inventory: Workshop Inventory
+    project: Automated Management
+    playbook: demo/health_check.yml
+    ask_limit_on_launch: true
+  - name: DEMO / Set Up Web Server
+    organization: Default
+    job_type: run
+    inventory: Workshop Inventory
+    project: Automated Management
+    playbook: demo/setup_web_server.yml
+    limit: node1.example.com
+    ask_limit_on_launch: true
+    credentials:
+      - Workshop Credential
+  - name: DEMO / Fail Workflow
+    organization: Default
+    job_type: run
+    inventory: Workshop Inventory
+    project: Automated Management
+    playbook: demo/fail_workflow.yml
+    ask_limit_on_launch: false
