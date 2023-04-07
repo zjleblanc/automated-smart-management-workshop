@@ -1,5 +1,5 @@
 demo_wjt:
-  name: Patch Node Workflow
+  name: DEMO / Patch Node Workflow
   description: Demo workflow for backing up a node, patching it, running a health check, and restoring on failure.
   organization: Default
   inventory: Workshop Inventory
@@ -24,9 +24,10 @@ demo_wjt:
           - identifier: Perform Fact Scan
     - identifier: Sync Inventory
       unified_job_template:
-        name: ALL Development
-        organization:
-            name: Default
+        name: EC2 Dynamic Source - RHEL7 Development - ALL
+        inventory:
+          organization:
+              name: Default
         type: inventory_source
       related:
         success_nodes:
@@ -55,6 +56,9 @@ demo_wjt:
         organization:
             name: Default
         type: job_template
+      extra_data:
+        lifecycle_stage: RHEL7_Dev
+        check_only: yes
       related:
         success_nodes:
           - identifier: Health Check
@@ -78,7 +82,7 @@ demo_wjt:
             name: Default
         type: job_template
       related:
-        success_nodes:
+        always_nodes:
           - identifier: Fail Workflow
     - identifier: Send Slack Notification
       unified_job_template:

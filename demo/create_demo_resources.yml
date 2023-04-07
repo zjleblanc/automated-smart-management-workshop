@@ -14,12 +14,10 @@
       ansible.builtin.assert:
         that:
           - "lookup('env', 'CONTROLLER_USERNAME') !=''"
-          - workshop_guid is defined
         fail_msg:
           - "This Job requires two credentials"
           - "Red Hat Ansible Automation Platform credential is not set"
           - "Please assign correct credentials to the Job Template"
-          - "Also set the workshop_guid extra var to your workshop guid"
 
     - name: Determine that both AAP and Machine credentials are set
       ansible.builtin.debug:
@@ -27,6 +25,10 @@
           - "{{ lookup('env', 'CONTROLLER_USERNAME') }}"
           - "{{ lookup('env', 'CONTROLLER_PASSWORD') }}"
           - "{{ lookup('env', 'CONTROLLER_HOST') }}"
+
+    - name: Set workflow guid
+      ansible.builtin.set_fact:
+        workshop_guid: "{{ lookup('env', 'CONTROLLER_HOST').split('.')[1] }}"
 
     - name: Create Slack API Token Credential Type
       awx.awx.credential_type:
