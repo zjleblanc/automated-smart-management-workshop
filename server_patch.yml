@@ -23,8 +23,11 @@
     yum:
       name: '*'
       state: latest
-      exclude: kernel*
+      exclude: 
+        - kernel*
+        - NetworkManager*
     check_mode: "{{ check_only }}"
+    throttle: 1
     register: updates
 
   - name: output updates dictionary

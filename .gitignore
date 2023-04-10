@@ -1,4 +1,6 @@
 ansible.cfg
+ansible-navigator.log
+artifacts
 private
 */*.pem
 **/__pycache__/**
