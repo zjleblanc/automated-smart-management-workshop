@@ -4,12 +4,18 @@
   gather_facts: false
 
   vars_files:
+    - "{{ playbook_dir }}/vars/project.yml"
     - "{{ playbook_dir }}/vars/credential_type.yml"
     - "{{ playbook_dir }}/vars/credential.yml"
     - "{{ playbook_dir }}/vars/job_template.yml"
     - "{{ playbook_dir }}/vars/workflow_job_template.yml"
 
   tasks:
+    - name: Simulate initial exercise
+      tags: init
+      ansible.builtin.include_role:
+        name: sim_init_exercise
+
     - name: Determine that both AAP and Machine credentials are set
       ansible.builtin.assert:
         that:
@@ -29,6 +35,21 @@
     - name: Set workflow guid
       ansible.builtin.set_fact:
         workshop_guid: "{{ lookup('env', 'CONTROLLER_HOST').split('.')[1] }}"
+
+    - name: Point project at fork
+      register: r_project_url
+      awx.awx.project:
+        name: "{{ workshop_project.name }}"
+        organization: "{{ workshop_project.organization }}"
+        scm_url: "{{ workshop_project.scm_url }}"
+        scm_branch: "{{ workshop_project.scm_branch }}"
+
+    - name: Update project
+      when: r_project_url.changed
+      awx.awx.project_update:
+        name: "{{ workshop_project.name }}"
+        organization: "{{ workshop_project.organization }}"
+        wait: true
 
     - name: Create Slack API Token Credential Type
       awx.awx.credential_type:

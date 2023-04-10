@@ -58,7 +58,7 @@ demo_wjt:
         type: job_template
       extra_data:
         lifecycle_stage: RHEL7_Dev
-        check_only: yes
+        check_only: "yes"
       related:
         success_nodes:
           - identifier: Health Check

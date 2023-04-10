@@ -1,0 +1,11 @@
+---
+- name: "Run -> {{ job_template_name }}"
+  awx.awx.job_launch:
+    job_template: "{{ job_template_name }}"
+    extra_vars: "{{ job_extra_vars }}"
+  register: r_job
+
+- name: "Wait -> {{ job_template_name }}"
+  awx.awx.job_wait:
+    job_id: "{{ r_job.id }}"
+    timeout: "{{ job_wait }}"
