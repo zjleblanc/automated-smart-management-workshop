@@ -1,0 +1,33 @@
+---
+- name: Run and wait for jobs
+  loop:
+    - name: SETUP / Controller
+      wait: 240
+    - name: SATELLITE / RHEL - Publish Content View
+      extra_vars:
+        content_view: RHEL7
+    - name: CONVERT2RHEL / 01 - Take node snapshot
+      wait: 540
+    - name: SERVER / RHEL7 - Register
+      extra_vars:
+        PREFIX: node
+        env: Dev
+    - name: SERVER / CentOS7 - Register
+      extra_vars:
+        PREFIX: node
+        env: Dev
+    - name: EC2 / Set instance tags based on Satellite(Foreman) facts
+    - name: EC2 / Set instance tag - AnsibleGroup
+    - name: CONTROLLER / Update inventories via dynamic sources
+      extra_vars:
+        content_view: RHEL7
+        env: Dev
+    - name: CONTROLLER / Update inventories via dynamic sources
+      extra_vars:
+        content_view: CentOS7
+        env: Dev
+  ansible.builtin.include_tasks: run_job.yml
+  vars:
+    job_template_name: "{{ item.name }}"
+    job_wait: "{{ item.wait | default(120) }}"
+    job_extra_vars: "{{ item.extra_vars | default({}) }}"

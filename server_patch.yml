@@ -1,10 +1,20 @@
 ---
 - hosts: "env_{{ lifecycle_stage }}"
   become: yes
+  gather_facts: no
   vars:
     check_only: yes
 
   tasks:
+  - name: wait for ssh to be available
+    ansible.builtin.wait_for:
+      host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+      port: 22
+    delegate_to: localhost
+
+  - name: gather facts
+    ansible.builtin.setup:
+
   - name: check operating system
     assert:
       that: "ansible_os_family == 'RedHat'"
@@ -23,6 +33,13 @@
   - name: output updates dictionary
     debug:
       msg: "{{ updates }}"
+
+  - name: set stat for patching notification
+    ansible.builtin.set_stats:
+      data:
+        nodes_updated:
+          - hostname: "{{ inventory_hostname }}"
+            updates: "{{ updates }}"
     
   - name: updated package list
     debug:

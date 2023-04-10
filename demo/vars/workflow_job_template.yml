@@ -1,0 +1,98 @@
+demo_wjt:
+  name: DEMO / Patch Node Workflow
+  description: Demo workflow for backing up a node, patching it, running a health check, and restoring on failure.
+  organization: Default
+  inventory: Workshop Inventory
+  ask_limit_on_launch: true
+  limit: node1.example.com
+  ask_variables_on_launch: true
+  extra_vars:
+    ec2_region: us-east-2
+    instances:
+      tags:
+        NodeName: node1.example.com
+        Workshop: "{{ workshop_guid }}" 
+  workflow_nodes:
+    - identifier: Project Sync
+      unified_job_template:
+        name: Automated Management
+        organization:
+          name: Default
+        type: project
+      related:
+        success_nodes:
+          - identifier: Perform Fact Scan
+    - identifier: Sync Inventory
+      unified_job_template:
+        name: EC2 Dynamic Source - RHEL7 Development - ALL
+        inventory:
+          organization:
+              name: Default
+        type: inventory_source
+      related:
+        success_nodes:
+          - identifier: Perform Fact Scan
+    - identifier: Perform Fact Scan
+      unified_job_template:
+        name: SERVER / RHEL7 - Fact Scan
+        organization:
+            name: Default
+        type: job_template
+      related:
+        success_nodes:
+          - identifier: Take Node Snapshot
+    - identifier: Take Node Snapshot
+      unified_job_template:
+        name: CONVERT2RHEL / 01 - Take node snapshot
+        organization:
+            name: Default
+        type: job_template
+      related:
+        success_nodes:
+          - identifier: Patch RHEL Node
+    - identifier: Patch RHEL Node
+      unified_job_template:
+        name: SERVER / RHEL7 - Patch
+        organization:
+            name: Default
+        type: job_template
+      extra_data:
+        lifecycle_stage: RHEL7_Dev
+        check_only: "yes"
+      related:
+        success_nodes:
+          - identifier: Health Check
+        failure_nodes:
+          - identifier: Revert Node via Snapshot
+    - identifier: Health Check
+      unified_job_template:
+        name: DEMO / Health Check
+        organization:
+            name: Default
+        type: job_template
+      related:
+        success_nodes:
+          - identifier: Send Slack Notification
+        failure_nodes:
+          - identifier: Revert Node via Snapshot
+    - identifier: Revert Node via Snapshot
+      unified_job_template:
+        name: CONVERT2RHEL / 98 - Revert node state via snapshot
+        organization:
+            name: Default
+        type: job_template
+      related:
+        always_nodes:
+          - identifier: Fail Workflow
+    - identifier: Send Slack Notification
+      unified_job_template:
+        name: DEMO / Patch Updates Slack Notification
+        organization:
+            name: Default
+        type: job_template
+    - identifier: Fail Workflow
+      unified_job_template:
+        name: DEMO / Fail Workflow
+        organization:
+            name: Default
+        type: job_template

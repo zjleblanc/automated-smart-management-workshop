@@ -1,0 +1,112 @@
+---
+- name: Create AAP Resources for Patching Demo
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - "{{ playbook_dir }}/vars/project.yml"
+    - "{{ playbook_dir }}/vars/credential_type.yml"
+    - "{{ playbook_dir }}/vars/credential.yml"
+    - "{{ playbook_dir }}/vars/job_template.yml"
+    - "{{ playbook_dir }}/vars/workflow_job_template.yml"
+
+  tasks:
+    - name: Simulate initial exercise
+      tags: init
+      ansible.builtin.include_role:
+        name: sim_init_exercise
+
+    - name: Determine that both AAP and Machine credentials are set
+      ansible.builtin.assert:
+        that:
+          - "lookup('env', 'CONTROLLER_USERNAME') !=''"
+        fail_msg:
+          - "This Job requires two credentials"
+          - "Red Hat Ansible Automation Platform credential is not set"
+          - "Please assign correct credentials to the Job Template"
+
+    - name: Determine that both AAP and Machine credentials are set
+      ansible.builtin.debug:
+        msg:
+          - "{{ lookup('env', 'CONTROLLER_USERNAME') }}"
+          - "{{ lookup('env', 'CONTROLLER_PASSWORD') }}"
+          - "{{ lookup('env', 'CONTROLLER_HOST') }}"
+
+    - name: Set workflow guid
+      ansible.builtin.set_fact:
+        workshop_guid: "{{ lookup('env', 'CONTROLLER_HOST').split('.')[1] }}"
+
+    - name: Point project at fork
+      register: r_project_url
+      awx.awx.project:
+        name: "{{ workshop_project.name }}"
+        organization: "{{ workshop_project.organization }}"
+        scm_url: "{{ workshop_project.scm_url }}"
+        scm_branch: "{{ workshop_project.scm_branch }}"
+
+    - name: Update project
+      when: r_project_url.changed
+      awx.awx.project_update:
+        name: "{{ workshop_project.name }}"
+        organization: "{{ workshop_project.organization }}"
+        wait: true
+
+    - name: Create Slack API Token Credential Type
+      awx.awx.credential_type:
+        name: "{{ slack_credential_type.name }}"
+        description: "{{ slack_credential_type.description }}"
+        kind: "{{ slack_credential_type.kind }}"
+        inputs: "{{ slack_credential_type.inputs }}"
+        injectors: "{{ slack_credential_type.injectors }}"
+        state: present
+        validate_certs: false
+
+    - name: Create Slack API Token Credential
+      when:
+        - input_slack_token is defined
+        - input_slack_token|length > 0
+      awx.awx.credential:
+        name: "{{ slack_credential.name }}"
+        organization: "{{ slack_credential.organization }}"
+        credential_type: "{{ slack_credential.credential_type }}"
+        inputs: "{{ slack_credential.inputs }}"
+        state: present
+
+    - name: Create additonal job templates
+      loop: "{{ additional_jts }}"
+      loop_control:
+        loop_var: jt
+      awx.awx.job_template:
+        name: "{{ jt.name }}"
+        organization: "{{ jt.organization }}"
+        inventory: "{{ jt.inventory | default(omit) }}"
+        project: "{{ jt.project }}"
+        playbook: "{{ jt.playbook }}"
+        credentials: "{{ jt.credentials | default(omit) }}"
+        limit: "{{ jt.limit | default(omit) }}"
+        ask_limit_on_launch: "{{ jt.ask_limit_on_launch | default(omit) }}"
+        ask_extra_vars: "{{ jt.ask_extra_vars | default(omit) }}"
+        state: present
+
+    - name: Job templates - prompt extra vars
+      loop: "{{ prompt_extra_vars_jts }}"
+      loop_control:
+        loop_var: jt
+      awx.awx.job_template:
+        name: "{{ jt.name }}"
+        organization: "{{ jt.organization }}"
+        project: "{{ jt.project }}"
+        ask_extra_vars: true
+
+    - name: Create Patch Workflow Job Template
+      awx.awx.workflow_job_template:
+        name: "{{ demo_wjt.name }}"
+        description: "{{ demo_wjt.description }}"
+        organization: "{{ demo_wjt.organization }}"
+        inventory: "{{ demo_wjt.inventory }}"
+        ask_limit_on_launch: "{{ demo_wjt.ask_limit_on_launch }}"
+        limit: "{{ demo_wjt.limit }}"
+        ask_variables_on_launch: "{{ demo_wjt.ask_variables_on_launch }}"
+        extra_vars: "{{ demo_wjt.extra_vars }}"
+        workflow_nodes: "{{ demo_wjt.workflow_nodes }}"
+        state: present

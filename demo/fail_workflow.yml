@@ -1,0 +1,10 @@
+---
+- name: Force fail workflow
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Assert false
+      ansible.builtin.assert:
+        that: false
+        fail_msg: "Intentionally failing workflow having gone down sad path with a handler."

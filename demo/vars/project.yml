@@ -1,0 +1,5 @@
+workshop_project:
+  name: Automated Management
+  organization: Default
+  scm_url: https://github.com/zjleblanc/automated-smart-management-workshop.git
+  scm_branch: patch-workflow
