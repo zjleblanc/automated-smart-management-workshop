@@ -1,13 +1,17 @@
-prompt_extra_vars_jts:
+config_prompts_jts:
   - name: CONVERT2RHEL / 01 - Take node snapshot
     organization: Default
     project: Automated Management
+    ask_extra_vars: true
   - name: SERVER / RHEL7 - Patch
     organization: Default
     project: Automated Management
+    ask_extra_vars: true
+    ask_limit: true
   - name: CONVERT2RHEL / 98 - Revert node state via snapshot
     organization: Default
     project: Automated Management
+    ask_extra_vars: true
 
 additional_jts:
   - name: DEMO / Patch Updates Slack Notification

@@ -96,7 +96,8 @@
         name: "{{ jt.name }}"
         organization: "{{ jt.organization }}"
         project: "{{ jt.project }}"
-        ask_extra_vars: true
+        ask_extra_vars: "{{ jt.ask_extra_vars | default(false) }}"
+        ask_limit_on_launch: "{{ jt.ask_limit | default(false) }}"
 
     - name: Create Patch Workflow Job Template
       awx.awx.workflow_job_template:
