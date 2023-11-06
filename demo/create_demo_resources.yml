@@ -89,7 +89,7 @@
         state: present
 
     - name: Job templates - prompt extra vars
-      loop: "{{ prompt_extra_vars_jts }}"
+      loop: "{{ config_prompts_jts }}"
       loop_control:
         loop_var: jt
       awx.awx.job_template:
