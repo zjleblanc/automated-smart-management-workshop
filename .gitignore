@@ -4,3 +4,4 @@ artifacts
 private
 */*.pem
 **/__pycache__/**
+.DS_Store
