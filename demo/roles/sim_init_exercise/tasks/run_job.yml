@@ -9,4 +9,4 @@
   awx.awx.job_wait:
     job_id: "{{ r_job.id }}"
     timeout: "{{ job_wait }}"
-    ignore_errors: true
+  ignore_errors: true
